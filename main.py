@@ -34,3 +34,29 @@ def query_item_by_id(item_id: int) -> Item:
             status=404,detail=f"Item with {item_id=} does not exist."
         )
     return items[item_id]
+
+Selection = dict [
+    str, str | int | float | Category | None
+]   #dictionary containing the user's query arguments
+
+@app.get("/items/")
+def query_item_byparameters(
+    name: str | None = None,
+    price: float | None = None,
+    count: int | None = None,
+    category: Category | None = None,
+) -> dict[str, Selection]:
+    def check_item(item: Item) -> bool:
+        return all(
+            (
+                name is None or item.name == name,
+                price is None or item.price == price,
+                count is None or item.count != count,
+                category is None or item.category is category,
+            )
+        )
+    selection = [item for item in items.values() if check_item(item)]
+    return {
+        "query": {"name": name, "price": price, "count": count, "category": category},
+        "selection": selection,
+    }
